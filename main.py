@@ -1,7 +1,7 @@
 from abc import abstractmethod
 import pygame
 
-DISPLAY_SIZE = (640, 480)
+DISPLAY_SIZE = (1200, 900)
 
 
 class App:
@@ -79,29 +79,29 @@ class MenuState(AppState):
         self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
 
     def process_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and 260 > event.pos[0] > 110 and 450 > event.pos[1] > 350:  # 1 уровень
+        if event.type == pygame.MOUSEBUTTONDOWN and 440 > event.pos[0] > 240 and 750 > event.pos[1] > 650:  # 1 уровень
             self.get_app().set_state(GameState())
-        if event.type == pygame.MOUSEBUTTONDOWN and 550 > event.pos[0] > 400 and 450 > event.pos[1] > 350:  # 2 уровень
+        if event.type == pygame.MOUSEBUTTONDOWN and 980 > event.pos[0] > 780 and 750 > event.pos[1] > 650:  # 2 уровень
             self.get_app().set_state(GameState())
 
     def loop(self, dt):
         screen = self.get_app().get_screen()
         screen.fill((0, 0, 0))
         screen.blit(self._bg_img, (0, 0))
-        font = pygame.font.Font(None, 25)
+        font = pygame.font.Font(None, 35)
         for i, line in enumerate(self._text):
             if i > 1:
-                font = pygame.font.Font(None, 20)
+                font = pygame.font.Font(None, 30)
                 line_img = font.render(line, True, (123, 104, 238))
                 screen.blit(line_img, (0, i * line_img.get_rect().height * 1.4))
                 continue
             line_img = font.render(line, True, (123, 104, 238))
             screen.blit(line_img, (0, i * line_img.get_rect().height * 1.1))
-        pygame.draw.rect(screen, (123, 104, 238), (110, 350, 150, 100))
-        pygame.draw.rect(screen, (123, 104, 238), (400, 350, 150, 100))
-        font = pygame.font.Font(None, 40)
-        screen.blit(font.render('1 уровень', True, (100, 255, 100)), (115, 380))
-        screen.blit(font.render('2 уровень', True, (100, 255, 100)), (405, 380))
+        pygame.draw.rect(screen, (123, 104, 238), (240, 650, 200, 100))
+        pygame.draw.rect(screen, (123, 104, 238), (780, 650, 200, 100))
+        font = pygame.font.Font(None, 50)
+        screen.blit(font.render('1 уровень', True, (100, 255, 100)), (255, 675))
+        screen.blit(font.render('2 уровень', True, (100, 255, 100)), (795, 675))
 
     def destroy(self):
         pass
@@ -146,7 +146,7 @@ if __name__ == '__main__':
 
     menu_state = MenuState('background', 'Привет!'
                                          '\nТы попал в игру "огонь и вода"'
-                                         '\nПравила игры: управлять девочкой можно клавишами A, W, D; \n'
+                                         '\nПравила игры: управлять девочкой можно клавишами A, W, D; '
                                          'мальчиком можно управлять стрелками. \n'
                                          'Если смешать огонь и воду, то Вы проиграете.\n'
                                          'В игре есть 2 уровня, чтбы начать нажмите на одну из кнопок. Удачи!')
