@@ -79,9 +79,9 @@ class MenuState(AppState):
         self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
 
     def process_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and 260 > event.pos[0] > 110 and 450 > event.pos[1] > 350:  # 1 уровень
+        if event.type == pygame.MOUSEBUTTONDOWN and 440 > event.pos[0] > 240 and 750 > event.pos[1] > 650:  # 1 уровень
             self.get_app().set_state(Level1())
-        if event.type == pygame.MOUSEBUTTONDOWN and 550 > event.pos[0] > 400 and 450 > event.pos[1] > 350:  # 2 уровень
+        if event.type == pygame.MOUSEBUTTONDOWN and 980 > event.pos[0] > 780 and 750 > event.pos[1] > 650:  # 2 уровень
             self.get_app().set_state(GameState())
 
     def loop(self, dt):
