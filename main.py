@@ -135,6 +135,8 @@ class Level1(AppState):
         screen = self.get_app().get_screen()
         level_x, level_y = generate_level(load_level('data/level1.txt'))
         tiles_group.draw(screen)
+        all_sprites.draw(screen)
+        all_sprites.update()
 
     def setup(self):
         pass
@@ -153,6 +155,21 @@ class Tile(pygame.sprite.Sprite):
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             60 * pos_x, 30 * pos_y)
+
+
+class MainSrites(pygame.sprite.Sprite):
+    """Класс главных спрайтов - огни и воды"""
+    def __init__(self, type, *group):  # type должен быть равен либо 'fire', либо 'water'
+        super().__init__(*group)
+        self._type = type
+
+        sprite = pygame.sprite.Sprite()
+        sprite.image = main_sprites[self._type]
+        sprite.rect = sprite.image.get_rect()
+        all_sprites.add(sprite)
+
+    def update(self):
+        pass
 
 
 def load_image(image_path, colorkey=None):
@@ -195,6 +212,9 @@ if __name__ == '__main__':
     tile_images = {
             'wall': load_image('data/light_tile.png'),
             'empty': load_image('data/dark_tile.png')}
+
+    main_sprites = {'water': load_image('data/fire_sprite.jpg'),
+                    'fire': load_image('data/water_sprite.jpg')}
 
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
