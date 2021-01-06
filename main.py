@@ -136,7 +136,6 @@ class Level1(AppState):
         level_x, level_y = generate_level(load_level('data/level1.txt'))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
-        all_sprites.update()
 
     def setup(self):
         pass
@@ -162,13 +161,16 @@ class MainSrites(pygame.sprite.Sprite):
     def __init__(self, type, *group):  # type должен быть равен либо 'fire', либо 'water'
         super().__init__(*group)
         self._type = type
+        self.image = main_sprites[self._type]
+        self.rect = self.image.get_rect()
+        if type == 'fire':
+            self.rect[0] += 150
+            self.rect[1] += 780
+        elif type == 'water':
+            self.rect[0] += 65
+            self.rect[1] += 780
 
-        sprite = pygame.sprite.Sprite()
-        sprite.image = main_sprites[self._type]
-        sprite.rect = sprite.image.get_rect()
-        all_sprites.add(sprite)
-
-    def update(self):
+    def update(self, *args):
         pass
 
 
@@ -199,6 +201,8 @@ def generate_level(level):
                 tiles_group.add(Tile('empty', x, y))
             elif level[y][x] == '-':
                 tiles_group.add(Tile('wall', x, y))
+    all_sprites.add(MainSrites('fire'))
+    all_sprites.add(MainSrites('water'))
     return x, y
 
 
@@ -213,8 +217,8 @@ if __name__ == '__main__':
             'wall': load_image('data/light_tile.png'),
             'empty': load_image('data/dark_tile.png')}
 
-    main_sprites = {'water': load_image('data/fire_sprite.jpg'),
-                    'fire': load_image('data/water_sprite.jpg')}
+    main_sprites = {'fire': load_image('data/fire_sprite.png'),
+                    'water': load_image('data/water_sprite.png')}
 
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
