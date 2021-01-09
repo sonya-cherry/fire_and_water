@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import csv
 import pygame
 
 DISPLAY_SIZE = (1200, 900)
@@ -133,8 +134,10 @@ class Level1(AppState):
 
     def loop(self, dt):
         screen = self.get_app().get_screen()
-        level_x, level_y = generate_level(load_level('data/level1.txt'))
+        level_x, level_y = generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
         tiles_group.draw(screen)
+        all_sprites.draw(screen)
+        object_group.draw(screen)
 
     def setup(self):
         pass
@@ -148,11 +151,35 @@ class Level1(AppState):
 
 
 class Tile(pygame.sprite.Sprite):
+
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__()
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(
             60 * pos_x, 30 * pos_y)
+
+
+class Object(pygame.sprite.Sprite):
+
+    def __init__(self, object_type, pos_x, pos_y):
+        super().__init__()
+        self._type = object_type
+        self.image = object_images[self._type]
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+
+
+class MainSrites(pygame.sprite.Sprite):
+
+    """Класс главных спрайтов - огня и воды"""
+
+    def __init__(self, type, pos_x, pos_y, *group):  # type должен быть равен либо 'fire', либо 'water'
+        super().__init__(*group)
+        self._type = type
+        self.image = main_sprites[self._type]
+        self.rect = self.image.get_rect().move(pos_x, pos_y)
+
+    def update(self, *args):
+        pass
 
 
 def load_image(image_path, colorkey=None):
@@ -166,6 +193,14 @@ def load_image(image_path, colorkey=None):
     return result
 
 
+def load_sprties(filename):
+    # читаем спрайты уровня, представленные в виде csv-твблицы (тип_спрайта;координата_х;координата_у;)
+    with open(filename, encoding="utf8") as sprites_file:
+        reader = csv.reader(sprites_file,
+                            delimiter=';', quotechar='"')
+        return list(reader)
+
+
 def load_level(filename):
     filename = filename
     # читаем уровень, убирая символы перевода строки
@@ -174,30 +209,50 @@ def load_level(filename):
     return level_map
 
 
-def generate_level(level):
+def generate_level(level, sprites):
     x, y = None, None
+    # создаем уровень по тайлам
     for y in range(len(level)):
         for x in range(len(level[y])):
             if level[y][x] == ' ':
                 tiles_group.add(Tile('empty', x, y))
             elif level[y][x] == '-':
                 tiles_group.add(Tile('wall', x, y))
+
+    # создаем спрайты уровня
+    for line in sprites:
+        if line[0] == 'water' or line[0] == 'fire':
+            all_sprites.add(MainSrites(line[0], int(line[1]), int(line[2])))
+        else:
+            all_sprites.add(Object(line[0], int(line[1]), int(line[2])))
+
     return x, y
 
 
 if __name__ == '__main__':
-
     app = App(DISPLAY_SIZE)
 
-    imgs = {'background': load_image('data/fire_and_water.jpg'),
-            'level1_platforms': load_image('data/level1_platforms.png')
-            }
+    imgs = {'background': load_image('data/fire_and_water.jpg')}
+
     tile_images = {
-            'wall': load_image('data/light_tile.png'),
-            'empty': load_image('data/dark_tile.png')}
+        'wall': load_image('data/light_tile.png'),
+        'empty': load_image('data/dark_tile.png')}
+
+    object_images = {'blue_puddle': load_image('data/blue_puddle.png'),
+                     'red_puddle': load_image('data/red_puddle.png'),
+                     'green_puddle': load_image('data/green_puddle.png'),
+                     'water_door': load_image('data/water_door.png'),
+                     'fire_door': load_image('data/fire_door.png'),
+                     'blue_jem': load_image('data/blue_jem.png'),
+                     'red_jem': load_image('data/red_jem.png'),
+                     'grey_jem': load_image('data/grey_jem.png')}
+
+    main_sprites = {'fire': load_image('data/fire_sprite.png'),
+                    'water': load_image('data/water_sprite.png')}
 
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
+    object_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
 
     menu_state = MenuState('background', 'Привет!'
