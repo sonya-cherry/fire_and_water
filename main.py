@@ -250,6 +250,9 @@ if __name__ == '__main__':
     main_sprites = {'fire': load_image('data/fire_sprite.png'),
                     'water': load_image('data/water_sprite.png')}
 
+    main_sprites = {'fire': load_image('data/fire_sprite.png'),
+                    'water': load_image('data/water_sprite.png')}
+
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
     object_group = pygame.sprite.Group()
