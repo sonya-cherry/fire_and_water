@@ -123,8 +123,8 @@ class LevelCompleted(AppState):
         self._red_gem_amount = red_gem_amount
         self._blue_gem_amount = blue_gem_amount
         self._level = level
-        self._text = f'Поздравляем, вы прошли уровень {self._level}!\nВаше время: {self._time} сек\nСобранные алмазы:\n\n\nИграть заново?'.split(
-            '\n')
+        self._text = f'Поздравляем, вы прошли уровень {self._level}!' \
+                     f'\nВаше время: {self._time} сек\nСобранные алмазы:\n\n\nИграть заново?'.split('\n')
 
     def setup(self):
         self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
@@ -187,6 +187,7 @@ class Level1(AppState):
         screen = self.get_app().get_screen()
         level_x, level_y = generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
         tiles_group.draw(screen)
+        all_sprites.update(pygame.key.get_pressed(), dt)
         all_sprites.draw(screen)
 
         self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
@@ -216,6 +217,7 @@ class Level2(AppState):
         screen = self.get_app().get_screen()
         level_x, level_y = generate_level(load_level('data/level2.txt'), load_sprties('data/sprites_level2.txt'))
         tiles_group.draw(screen)
+        all_sprites.update(pygame.key.get_pressed(), dt)
         all_sprites.draw(screen)
 
         self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
@@ -263,11 +265,24 @@ class MainSrites(pygame.sprite.Sprite):
     def __init__(self, type, pos_x, pos_y, *group):  # type должен быть равен либо 'fire', либо 'water'
         super().__init__(*group)
         self._type = type
+        self._position = [pos_x, pos_y]
         self.image = main_sprites[self._type]
-        self.rect = self.image.get_rect().move(pos_x, pos_y)
+        self.rect = self.image.get_rect()
 
-    def update(self, *args):
-        pass
+    def update(self, keys, dt):
+        if keys[pygame.K_UP] and self._type == 'fire':
+            self._position[1] -= 10 * dt / 100
+        if keys[pygame.K_LEFT] and self._type == 'fire':
+            self._position[0] -= 10 * dt / 100
+        elif keys[pygame.K_RIGHT] and self._type == 'fire':
+            self._position[0] += 10 * dt / 100
+        if keys[pygame.K_w] and self._type == 'water':
+            self._position[1] -= 10 * dt / 100
+        if keys[pygame.K_a] and self._type == 'water':
+            self._position[0] -= 10 * dt / 100
+        elif keys[pygame.K_d] and self._type == 'water':
+            self._position[0] += 10 * dt / 100
+        self.rect.x, self.rect.y = self._position
 
 
 def load_image(image_path, colorkey=None):
@@ -340,7 +355,11 @@ if __name__ == '__main__':
                      'grey_gem': load_image('data/grey_gem.png')}
 
     main_sprites = {'fire': load_image('data/fire_sprite.png'),
-                    'water': load_image('data/water_sprite.png')}
+                    'water': load_image('data/water_sprite.png'),
+                    'fire_right': load_image('data/fire_sprite_right.png'),
+                    'fire_left': load_image('data/fire_sprite_left.png'),
+                    'water_right': load_image('data/water_sprite_right.png'),
+                    'water_left': load_image('data/water_sprite_left.png')}
 
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
