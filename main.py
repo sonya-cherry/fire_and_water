@@ -73,6 +73,9 @@ class MenuState(AppState):
 
     def __init__(self, background_image, text):
         super().__init__()
+
+        all_sprites.empty()
+
         self._bg_img = imgs[background_image]
         self._text = text.split('\n')
 
@@ -108,6 +111,51 @@ class MenuState(AppState):
         pass
 
 
+class LevelCompleted(AppState):
+
+    def __init__(self, background_image, red_gem_amount, blue_gem_amount, time, level):
+        super().__init__()
+
+        all_sprites.empty()
+
+        self._bg_img = imgs[background_image]
+        self._time = time
+        self._red_gem_amount = red_gem_amount
+        self._blue_gem_amount = blue_gem_amount
+        self._level = level
+        self._text = f'Поздравляем, вы прошли уровень {self._level}!\nВаше время: {self._time} сек\nСобранные алмазы:\n\n\nИграть заново?'.split(
+            '\n')
+
+    def setup(self):
+        self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
+
+    def process_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and 500 > event.pos[0] > 100 and 650 > event.pos[1] > 450:  # 1 уровень
+            self.get_app().set_state(Level1())
+        if event.type == pygame.MOUSEBUTTONDOWN and 1100 > event.pos[0] > 700 and 650 > event.pos[1] > 450:  # 2 уровень
+            self.get_app().set_state(Level2())
+
+    def loop(self, dt):
+        screen = self.get_app().get_screen()
+        screen.fill((0, 0, 0))
+        screen.blit(self._bg_img, (0, 0))
+        font = pygame.font.Font(None, 70)
+        for i, line in enumerate(self._text):
+            if i > 1:
+                font = pygame.font.Font(None, 70)
+                line_img = font.render(line, True, (255, 255, 255))
+                screen.blit(line_img, (0, i * line_img.get_rect().height * 1.4))
+                continue
+            line_img = font.render(line, True, (255, 255, 255))
+            screen.blit(line_img, (0, i * line_img.get_rect().height * 1.1))
+        pygame.draw.rect(screen, (123, 104, 238), (100, 450, 400, 200))
+        pygame.draw.rect(screen, (123, 104, 238), (700, 450, 400, 200))
+
+        font = pygame.font.Font(None, 100)
+        screen.blit(font.render('1 уровень', True, (100, 255, 100)), (130, 500))
+        screen.blit(font.render('2 уровень', True, (100, 255, 100)), (730, 500))
+
+
 class GameState(AppState):
 
     def __init__(self):
@@ -131,20 +179,26 @@ class Level1(AppState):
 
     def __init__(self):
         super().__init__()
+        self._start_ticks = pygame.time.get_ticks()
+        self._seconds = 0
+        self._font = pygame.font.Font(None, 50)
 
     def loop(self, dt):
         screen = self.get_app().get_screen()
         level_x, level_y = generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
-        object_group.draw(screen)
+
+        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
+        pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
+        screen.blit(self._font.render(f'0{str(self._seconds)}:00', True, (112, 102, 50)), (550, 10))
 
     def setup(self):
         pass
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.get_app().set_state(MenuState('background', 'Ты вернулся в меню!\nУра!\n(Не уходи)'))
+            self.get_app().set_state(MenuState('background', 'Ты вернулся в меню'))
 
     def destroy(self):
         pass
@@ -168,8 +222,13 @@ class Object(pygame.sprite.Sprite):
         self.rect = self.image.get_rect().move(pos_x, pos_y)
 
 
-class MainSrites(pygame.sprite.Sprite):
+class Gem(Object):
 
+    def __init__(self, object_type, pos_x, pos_y):
+        super().__init__(object_type, pos_x, pos_y)
+
+
+class MainSrites(pygame.sprite.Sprite):
     """Класс главных спрайтов - огня и воды"""
 
     def __init__(self, type, pos_x, pos_y, *group):  # type должен быть равен либо 'fire', либо 'water'
@@ -223,6 +282,8 @@ def generate_level(level, sprites):
     for line in sprites:
         if line[0] == 'water' or line[0] == 'fire':
             all_sprites.add(MainSrites(line[0], int(line[1]), int(line[2])))
+        elif line[0] == 'red_gem' or line[0] == 'blue_jem':
+            all_sprites.add(Gem(line[0], int(line[1]), int(line[2])))
         else:
             all_sprites.add(Object(line[0], int(line[1]), int(line[2])))
 
@@ -232,7 +293,8 @@ def generate_level(level, sprites):
 if __name__ == '__main__':
     app = App(DISPLAY_SIZE)
 
-    imgs = {'background': load_image('data/fire_and_water.jpg')}
+    imgs = {'background': load_image('data/fire_and_water.jpg'),
+            'background2': load_image('data/game_bg.png')}
 
     tile_images = {
         'wall': load_image('data/light_tile.png'),
@@ -253,8 +315,6 @@ if __name__ == '__main__':
 
     all_sprites = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
-    object_group = pygame.sprite.Group()
-    player_group = pygame.sprite.Group()
 
     menu_state = MenuState('background', 'Привет!'
                                          '\nТы попал в игру "огонь и вода"'
