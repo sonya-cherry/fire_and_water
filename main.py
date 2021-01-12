@@ -244,9 +244,9 @@ if __name__ == '__main__':
                      'water_door': load_image('data/water_door.png'),
                      'fire_door': load_image('data/fire_door.png'),
                      'open_door': load_image('data/open_door.png'),
-                     'blue_jem': load_image('data/blue_jem.png'),
-                     'red_jem': load_image('data/red_jem.png'),
-                     'grey_jem': load_image('data/grey_jem.png')}
+                     'blue_gem': load_image('data/blue_gem.png'),
+                     'red_gem': load_image('data/red_gem.png'),
+                     'grey_gem': load_image('data/grey_gem.png')}
 
     main_sprites = {'fire': load_image('data/fire_sprite.png'),
                     'water': load_image('data/water_sprite.png')}

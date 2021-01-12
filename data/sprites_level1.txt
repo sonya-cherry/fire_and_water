@@ -1,5 +1,7 @@
-red_jem;420;90;
-blue_jem;740;780;
+red_gem;470;90;
+red_gem;125;460;
+blue_gem;740;780;
+blue_gem;1040;310;
 blue_puddle;700;853;
 red_puddle;480;860;
 green_puddle;760;645;
