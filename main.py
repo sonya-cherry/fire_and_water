@@ -75,6 +75,7 @@ class MenuState(AppState):
         super().__init__()
 
         all_sprites.empty()
+        main_group.empty()
 
         self._bg_img = imgs[background_image]
         self._text = text.split('\n')
@@ -93,6 +94,7 @@ class MenuState(AppState):
         screen.fill((0, 0, 0))
         screen.blit(self._bg_img, (0, 0))
         font = pygame.font.Font(None, 35)
+
         for i, line in enumerate(self._text):
             if i > 1:
                 font = pygame.font.Font(None, 30)
@@ -101,6 +103,7 @@ class MenuState(AppState):
                 continue
             line_img = font.render(line, True, (123, 104, 238))
             screen.blit(line_img, (0, i * line_img.get_rect().height * 1.1))
+
         pygame.draw.rect(screen, (123, 104, 238), (240, 650, 200, 100))
         pygame.draw.rect(screen, (123, 104, 238), (780, 650, 200, 100))
         font = pygame.font.Font(None, 50)
@@ -148,6 +151,7 @@ class LevelCompleted(AppState):
                 continue
             line_img = font.render(line, True, (255, 255, 255))
             screen.blit(line_img, (0, i * line_img.get_rect().height * 1.1))
+
         pygame.draw.rect(screen, (123, 104, 238), (100, 450, 400, 200))
         pygame.draw.rect(screen, (123, 104, 238), (700, 450, 400, 200))
 
@@ -182,13 +186,18 @@ class Level1(AppState):
         self._start_ticks = pygame.time.get_ticks()
         self._seconds = 0
         self._font = pygame.font.Font(None, 50)
+        level_x, level_y = generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
 
     def loop(self, dt):
         screen = self.get_app().get_screen()
-        level_x, level_y = generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
+
         tiles_group.draw(screen)
+
         all_sprites.update(pygame.key.get_pressed(), dt)
         all_sprites.draw(screen)
+
+        main_group.update(pygame.key.get_pressed(), dt)
+        main_group.draw(screen)
 
         self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
         pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
@@ -212,13 +221,18 @@ class Level2(AppState):
         self._start_ticks = pygame.time.get_ticks()
         self._seconds = 0
         self._font = pygame.font.Font(None, 50)
+        level_x, level_y = generate_level(load_level('data/level2.txt'), load_sprties('data/sprites_level2.txt'))
 
     def loop(self, dt):
         screen = self.get_app().get_screen()
-        level_x, level_y = generate_level(load_level('data/level2.txt'), load_sprties('data/sprites_level2.txt'))
+
         tiles_group.draw(screen)
+
         all_sprites.update(pygame.key.get_pressed(), dt)
         all_sprites.draw(screen)
+
+        main_group.update(pygame.key.get_pressed(), dt)
+        main_group.draw(screen)
 
         self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
         pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
@@ -273,15 +287,21 @@ class MainSrites(pygame.sprite.Sprite):
         if keys[pygame.K_UP] and self._type == 'fire':
             self._position[1] -= 10 * dt / 100
         if keys[pygame.K_LEFT] and self._type == 'fire':
+            self.image = main_sprites['fire_left']
             self._position[0] -= 10 * dt / 100
         elif keys[pygame.K_RIGHT] and self._type == 'fire':
+            self.image = main_sprites['fire_right']
             self._position[0] += 10 * dt / 100
         if keys[pygame.K_w] and self._type == 'water':
             self._position[1] -= 10 * dt / 100
         if keys[pygame.K_a] and self._type == 'water':
+            self.image = main_sprites['water_left']
             self._position[0] -= 10 * dt / 100
         elif keys[pygame.K_d] and self._type == 'water':
+            self.image = main_sprites['water_right']
             self._position[0] += 10 * dt / 100
+        if not any([i for i in keys]):
+            self.image = main_sprites[self._type]
         self.rect.x, self.rect.y = self._position
 
 
@@ -325,8 +345,8 @@ def generate_level(level, sprites):
     # создаем спрайты уровня
     for line in sprites:
         if line[0] == 'water' or line[0] == 'fire':
-            all_sprites.add(MainSrites(line[0], int(line[1]), int(line[2])))
-        elif line[0] == 'red_gem' or line[0] == 'blue_jem':
+            main_group.add(MainSrites(line[0], int(line[1]), int(line[2])))
+        elif line[0] == 'red_gem' or line[0] == 'blue_gem':
             all_sprites.add(Gem(line[0], int(line[1]), int(line[2])))
         else:
             all_sprites.add(Object(line[0], int(line[1]), int(line[2])))
@@ -362,6 +382,7 @@ if __name__ == '__main__':
                     'water_left': load_image('data/water_sprite_left.png')}
 
     all_sprites = pygame.sprite.Group()
+    main_group = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
 
     menu_state = MenuState('background', 'Привет!'
