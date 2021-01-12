@@ -86,7 +86,7 @@ class MenuState(AppState):
         if event.type == pygame.MOUSEBUTTONDOWN and 440 > event.pos[0] > 240 and 750 > event.pos[1] > 650:  # 1 уровень
             self.get_app().set_state(Level1())
         if event.type == pygame.MOUSEBUTTONDOWN and 980 > event.pos[0] > 780 and 750 > event.pos[1] > 650:  # 2 уровень
-            self.get_app().set_state(GameState())
+            self.get_app().set_state(Level2())
 
     def loop(self, dt):
         screen = self.get_app().get_screen()
@@ -186,6 +186,35 @@ class Level1(AppState):
     def loop(self, dt):
         screen = self.get_app().get_screen()
         level_x, level_y = generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
+        tiles_group.draw(screen)
+        all_sprites.draw(screen)
+
+        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
+        pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
+        screen.blit(self._font.render(f'0{str(self._seconds)}:00', True, (112, 102, 50)), (550, 10))
+
+    def setup(self):
+        pass
+
+    def process_event(self, event):
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            self.get_app().set_state(MenuState('background', 'Ты вернулся в меню'))
+
+    def destroy(self):
+        pass
+
+
+class Level2(AppState):
+
+    def __init__(self):
+        super().__init__()
+        self._start_ticks = pygame.time.get_ticks()
+        self._seconds = 0
+        self._font = pygame.font.Font(None, 50)
+
+    def loop(self, dt):
+        screen = self.get_app().get_screen()
+        level_x, level_y = generate_level(load_level('data/level2.txt'), load_sprties('data/sprites_level2.txt'))
         tiles_group.draw(screen)
         all_sprites.draw(screen)
 

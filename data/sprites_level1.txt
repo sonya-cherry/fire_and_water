@@ -1,9 +1,13 @@
 red_gem;470;90;
 red_gem;125;460;
+red_gem;1040;700;
 blue_gem;740;780;
 blue_gem;1040;310;
+blue_gem;320;230;
 blue_puddle;700;853;
+blue_puddle;480;312;
 red_puddle;480;860;
+red_puddle;420;140;
 green_puddle;760;645;
 water_door;1020;80;
 fire_door;900;85;
