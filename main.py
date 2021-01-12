@@ -243,6 +243,7 @@ if __name__ == '__main__':
                      'green_puddle': load_image('data/green_puddle.png'),
                      'water_door': load_image('data/water_door.png'),
                      'fire_door': load_image('data/fire_door.png'),
+                     'open_door': load_image('data/open_door.png'),
                      'blue_jem': load_image('data/blue_jem.png'),
                      'red_jem': load_image('data/red_jem.png'),
                      'grey_jem': load_image('data/grey_jem.png')}

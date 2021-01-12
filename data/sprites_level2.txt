@@ -1,0 +1,15 @@
+water;1080;800;
+fire;80;800;
+blue_puddle;920;853;
+red_puddle;190;860;
+blue_puddle;190;703;
+red_puddle;920;710;
+green_puddle;550;760;
+fire_door;670;295;
+water_door;430;290;
+red_jem;230;800;
+red_jem;955;640;
+red_jem;110;420;
+blue_jem;955;800;
+blue_jem;230;640;
+blue_jem;1040;420;
