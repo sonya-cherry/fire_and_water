@@ -1,13 +1,12 @@
-from abc import abstractmethod
+from abc import abstractmethod  # импортируем библиотеки
 import csv
 import pygame
 
-DISPLAY_SIZE = (1200, 900)
-JUMP_POWER = 10
-GRAVITY = 0.35
+DISPLAY_SIZE = (1200, 900)  # размеры окна
 
 
 class App:
+    """Основной класс игры, в котором содержится игровой цикл"""
 
     def __init__(self, display_size):
         self._state = None
@@ -30,7 +29,7 @@ class App:
     def get_display_size(self):
         return self._display_size
 
-    def run(self):
+    def run(self):  # игровой цикл
         while self._running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -72,6 +71,7 @@ class AppState:
 
 
 class MenuState(AppState):
+    """Класс главного меню"""
 
     def __init__(self, background_image, text):
         super().__init__()
@@ -85,13 +85,13 @@ class MenuState(AppState):
     def setup(self):
         self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
 
-    def process_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and 440 > event.pos[0] > 240 and 750 > event.pos[1] > 650:  # 1 уровень
-            self.get_app().set_state(Level1())
-        if event.type == pygame.MOUSEBUTTONDOWN and 980 > event.pos[0] > 780 and 750 > event.pos[1] > 650:  # 2 уровень
-            self.get_app().set_state(Level2())
+    def process_event(self, event):  # обрабатываем события
+        if event.type == pygame.MOUSEBUTTONDOWN and 440 > event.pos[0] > 240 and 750 > event.pos[1] > 650:
+            self.get_app().set_state(Level1())  # "открываем" первый уровень
+        if event.type == pygame.MOUSEBUTTONDOWN and 980 > event.pos[0] > 780 and 750 > event.pos[1] > 650:
+            self.get_app().set_state(Level2())  # "открываем" второй уровень
 
-    def loop(self, dt):
+    def loop(self, dt):  # происходит загрзука, отрисовка всех элементов, находящихся в меню
         screen = self.get_app().get_screen()
         screen.fill((0, 0, 0))
         screen.blit(self._bg_img, (0, 0))
@@ -117,6 +117,7 @@ class MenuState(AppState):
 
 
 class LevelCompleted(AppState):
+    """Уровень, отображаемый при удачном завершении игры"""
 
     def __init__(self, background_image, red_gem_amount, blue_gem_amount, time, level):
         super().__init__()
@@ -171,8 +172,7 @@ class GameState(AppState):
         pass
 
     def process_event(self, event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.get_app().set_state(MenuState('background', 'Ты вернулся в меню!\nУра!\n(Не уходи)'))
+        pass
 
     def loop(self, dt):
         self.get_app().get_screen().fill((255, 128, 0))
@@ -182,6 +182,7 @@ class GameState(AppState):
 
 
 class Level1(AppState):
+    """Класс первого уровня"""
 
     def __init__(self):
         super().__init__()
@@ -217,6 +218,7 @@ class Level1(AppState):
 
 
 class Level2(AppState):
+    """Класс второго уровня"""
 
     def __init__(self):
         super().__init__()
@@ -252,6 +254,7 @@ class Level2(AppState):
 
 
 class Tile(pygame.sprite.Sprite):
+    """Класс тайлов"""
 
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__()
@@ -262,6 +265,7 @@ class Tile(pygame.sprite.Sprite):
 
 
 class Object(pygame.sprite.Sprite):
+    """Класс объектов (луж и дверей)"""
 
     def __init__(self, object_type, pos_x, pos_y):
         super().__init__()
@@ -271,6 +275,7 @@ class Object(pygame.sprite.Sprite):
 
 
 class Gem(Object):
+    """Класс алмазов"""
 
     def __init__(self, object_type, pos_x, pos_y):
         super().__init__(object_type, pos_x, pos_y)
