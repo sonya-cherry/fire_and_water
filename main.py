@@ -90,6 +90,8 @@ class MenuState(AppState):
             self.get_app().set_state(Level1())  # "открываем" первый уровень
         if event.type == pygame.MOUSEBUTTONDOWN and 980 > event.pos[0] > 780 and 750 > event.pos[1] > 650:
             self.get_app().set_state(Level2())  # "открываем" второй уровень
+        if event.type == pygame.MOUSEBUTTONDOWN and 700 > event.pos[0] > 500 and 750 > event.pos[1] > 650:
+            pass  # "открываем" окно с результатами игроков
 
     def loop(self, dt):  # происходит загрзука, отрисовка всех элементов, находящихся в меню
         screen = self.get_app().get_screen()
@@ -108,9 +110,12 @@ class MenuState(AppState):
 
         pygame.draw.rect(screen, (123, 104, 238), (240, 650, 200, 100))
         pygame.draw.rect(screen, (123, 104, 238), (780, 650, 200, 100))
+        pygame.draw.rect(screen, (123, 104, 238), (500, 650, 200, 100))
         font = pygame.font.Font(None, 50)
         screen.blit(font.render('1 уровень', True, (100, 255, 100)), (255, 675))
         screen.blit(font.render('2 уровень', True, (100, 255, 100)), (795, 675))
+        font = pygame.font.Font(None, 25)
+        screen.blit(font.render('Посмотреть результаты', True, (100, 255, 100)), (501, 690))
 
     def destroy(self):
         pass
