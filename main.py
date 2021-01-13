@@ -3,6 +3,8 @@ import csv
 import pygame
 
 DISPLAY_SIZE = (1200, 900)
+JUMP_POWER = 10
+GRAVITY = 0.35
 
 
 class App:
@@ -253,9 +255,10 @@ class Tile(pygame.sprite.Sprite):
 
     def __init__(self, tile_type, pos_x, pos_y):
         super().__init__()
+        self.tile_type = tile_type
         self.image = tile_images[tile_type]
-        self.rect = self.image.get_rect().move(
-            60 * pos_x, 30 * pos_y)
+        self.rect = self.image.get_rect().move(60 * pos_x, 30 * pos_y)
+        self.mask = pygame.mask.from_surface(self.image)
 
 
 class Object(pygame.sprite.Sprite):
@@ -282,6 +285,7 @@ class MainSrites(pygame.sprite.Sprite):
         self._position = [pos_x, pos_y]
         self.image = main_sprites[self._type]
         self.rect = self.image.get_rect()
+        self.mask = pygame.mask.from_surface(self.image)
 
     def update(self, keys, dt):
         if keys[pygame.K_UP] and self._type == 'fire':
@@ -389,7 +393,8 @@ if __name__ == '__main__':
                                          '\nТы попал в игру "огонь и вода"'
                                          '\nПравила игры: управлять девочкой можно клавишами A, W, D; '
                                          'мальчиком можно управлять стрелками. \n'
-                                         'Если смешать огонь и воду, то Вы проиграете.\n'
+                                         'Если смешать огонь и воду или огонь/воду с зелёной жидкостью, '
+                                         'то Вы проиграете.\n'
                                          'В игре есть 2 уровня, чтбы начать нажмите на одну из кнопок. Удачи!')
     app.set_state(menu_state)
     app.run()
