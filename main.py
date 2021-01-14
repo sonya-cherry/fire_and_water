@@ -1,6 +1,10 @@
 from abc import abstractmethod  # импортируем библиотеки
 import csv
 import pygame
+import sys
+from PyQt5.QtWidgets import QWidget, QApplication, QTableWidgetItem
+from PyQt5 import uic
+import sqlite3
 
 DISPLAY_SIZE = (1200, 900)  # размеры окна
 
@@ -70,6 +74,36 @@ class AppState:
         pass
 
 
+class Window(QWidget):
+
+    def __init__(self):
+        super().__init__()
+
+        uic.loadUi('data/database_results.ui', self)
+        self._init_ui()
+
+    def _init_ui(self):
+        self.setGeometry(500, 500, 577, 300)
+        self.setWindowTitle('Просмотр результатов')
+
+        self.con = sqlite3.connect("data/fire_and_water_db.db")
+        cur = self.con.cursor()
+        result_header = cur.execute('PRAGMA table_info(results)').fetchall()
+        result_header1 = list()
+        result_header1.append(result_header[0][1])
+        result_header1.append(result_header[1][1])
+        result_header1.append(result_header[2][1])
+        result_header1.append(result_header[3][1])
+        result_header1.append(result_header[4][1])
+        result = cur.execute(f"SELECT * FROM results").fetchall()
+        self.tableWidget.setRowCount(len(result))
+        self.tableWidget.setColumnCount(len(result[0]) if len(result) > 1 else 0)
+        self.tableWidget.setHorizontalHeaderLabels(result_header1)
+        for i, elem in enumerate(result):
+            for j, val in enumerate(elem):
+                self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
+
+
 class MenuState(AppState):
     """Класс главного меню"""
 
@@ -91,7 +125,12 @@ class MenuState(AppState):
         if event.type == pygame.MOUSEBUTTONDOWN and 980 > event.pos[0] > 780 and 750 > event.pos[1] > 650:
             self.get_app().set_state(Level2())  # "открываем" второй уровень
         if event.type == pygame.MOUSEBUTTONDOWN and 700 > event.pos[0] > 500 and 750 > event.pos[1] > 650:
-            pass  # "открываем" окно с результатами игроков
+            app = QApplication(sys.argv)  # "открываем" окно с результатами игроков
+
+            window = Window()
+            window.show()
+
+            app.exec()
 
     def loop(self, dt):  # происходит загрзука, отрисовка всех элементов, находящихся в меню
         screen = self.get_app().get_screen()
