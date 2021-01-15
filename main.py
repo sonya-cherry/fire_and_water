@@ -74,7 +74,7 @@ class AppState:
         pass
 
 
-class Window(QWidget):
+class WindowResults(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -97,11 +97,56 @@ class Window(QWidget):
         result_header1.append(result_header[4][1])
         result = cur.execute(f"SELECT * FROM results").fetchall()
         self.tableWidget.setRowCount(len(result))
-        self.tableWidget.setColumnCount(len(result[0]) if len(result) > 1 else 0)
+        self.tableWidget.setColumnCount(len(result[0]))
         self.tableWidget.setHorizontalHeaderLabels(result_header1)
         for i, elem in enumerate(result):
             for j, val in enumerate(elem):
                 self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
+
+
+class WindowFinish(QWidget):
+
+    def __init__(self):
+        super().__init__()
+
+        uic.loadUi('data/database_finish.ui', self)
+        self._init_ui()
+
+    def _init_ui(self):
+        self.setGeometry(500, 500, 577, 300)
+        self.setWindowTitle('Внесение данных в БД')
+
+        self.pushButton.clicked.connect(self._btn_clicked)
+
+        self.level = None
+        self.time = None
+        self.gems = None
+
+    def set_information(self, level, time, gems):
+        self.level = level
+        self.time = time
+        self.gems = gems
+
+    def _btn_clicked(self):
+        self.con = sqlite3.connect("data/fire_and_water_db.db")
+        cur = self.con.cursor()
+
+        cur.execute(f"INSERT INTO results(name, level, time, gems) "
+                    f"VALUES('{self.lineEdit.text()}', {self.level}, '{self.time} сек', {self.gems})").fetchall()
+        result_header = cur.execute('PRAGMA table_info(results)').fetchall()
+        result_header1 = list()
+        result_header1.append(result_header[0][1])
+        result_header1.append(result_header[1][1])
+        result_header1.append(result_header[2][1])
+        result_header1.append(result_header[3][1])
+        result_header1.append(result_header[4][1])
+        result = cur.execute(f"SELECT * FROM results").fetchall()
+        self.tableWidget.setRowCount(len(result))
+        self.tableWidget.setColumnCount(len(result[0]))
+        self.tableWidget.setHorizontalHeaderLabels(result_header1)
+        for i, elem in enumerate(result):
+            for j, val in enumerate(elem):
+                    self.tableWidget.setItem(i, j, QTableWidgetItem(str(val)))
 
 
 class MenuState(AppState):
@@ -122,10 +167,8 @@ class MenuState(AppState):
                       'то Вы проиграете.',
                       'В игре есть 2 уровня, чтбы начать нажмите на одну из кнопок. Удачи!']
 
-
     def setup(self):
         self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
-
 
     def process_event(self, event):  # обрабатываем события
         if event.type == pygame.MOUSEBUTTONDOWN and 440 > event.pos[0] > 240 and 750 > event.pos[1] > 650:
@@ -135,11 +178,10 @@ class MenuState(AppState):
         if event.type == pygame.MOUSEBUTTONDOWN and 700 > event.pos[0] > 500 and 750 > event.pos[1] > 650:
             app = QApplication(sys.argv)  # "открываем" окно с результатами игроков
 
-            window = Window()
+            window = WindowResults()
             window.show()
 
             app.exec()
-
 
     def loop(self, dt):  # происходит загрзука, отрисовка всех элементов, находящихся в меню
         screen = self.get_app().get_screen()
@@ -164,7 +206,6 @@ class MenuState(AppState):
         screen.blit(font.render('2 уровень', True, (100, 255, 100)), (795, 675))
         font = pygame.font.Font(None, 25)
         screen.blit(font.render('Посмотреть результаты', True, (100, 255, 100)), (501, 690))
-
 
     def destroy(self):
         pass
@@ -227,11 +268,16 @@ class LevelCompleted(AppState):
         pygame.draw.rect(screen, (123, 104, 238), (25, 450, 350, 200))
         pygame.draw.rect(screen, (123, 104, 238), (425, 450, 350, 200))
         pygame.draw.rect(screen, (123, 104, 238), (825, 450, 350, 200))
+        pygame.draw.rect(screen, (123, 104, 238), (425, 680, 350, 200))
 
         font = pygame.font.Font(None, 100)
         screen.blit(font.render('1 уровень', True, (100, 255, 100)), (30, 500))
         screen.blit(font.render('Меню', True, (100, 255, 100)), (500, 500))
         screen.blit(font.render('2 уровень', True, (100, 255, 100)), (830, 500))
+        font = pygame.font.Font(None, 70)
+        screen.blit(font.render('внести', True, (100, 255, 100)), (515, 680))
+        screen.blit(font.render('результаты в', True, (100, 255, 100)), (450, 730))
+        screen.blit(font.render('базу данных', True, (100, 255, 100)), (450, 780))
 
     def process_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN and 375 > event.pos[0] > 25 and 650 > event.pos[1] > 450:  # 1 уровень
@@ -240,6 +286,14 @@ class LevelCompleted(AppState):
             self.get_app().set_state(MenuState())
         if event.type == pygame.MOUSEBUTTONDOWN and 1175 > event.pos[0] > 825 and 650 > event.pos[1] > 450:  # 2 уровень
             self.get_app().set_state(Level2())
+        if event.type == pygame.MOUSEBUTTONDOWN and 775 > event.pos[0] > 425 and 880 > event.pos[1] > 680:  # внесение
+            app = QApplication(sys.argv)  # данных в БД
+
+            window = WindowFinish()
+            window.set_information(int(self._level), str(self._time), self._red_gem_amount + self._blue_gem_amount)
+            window.show()
+
+            app.exec()
 
     def loop(self, dt):
         pass
@@ -289,7 +343,6 @@ class LevelFailed(AppState):
             self.get_app().set_state(MenuState())
         if event.type == pygame.MOUSEBUTTONDOWN and 1175 > event.pos[0] > 825 and 400 > event.pos[1] > 200:  # 2 уровень
             self.get_app().set_state(Level2())
-
 
 
 class GameState(AppState):
