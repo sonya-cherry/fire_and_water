@@ -275,7 +275,7 @@ class LevelCompleted(AppState):
         screen.blit(font.render('Меню', True, (100, 255, 100)), (500, 500))
         screen.blit(font.render('2 уровень', True, (100, 255, 100)), (830, 500))
         font = pygame.font.Font(None, 70)
-        screen.blit(font.render('внести', True, (100, 255, 100)), (515, 680))
+        screen.blit(font.render('Внести', True, (100, 255, 100)), (515, 680))
         screen.blit(font.render('результаты в', True, (100, 255, 100)), (450, 730))
         screen.blit(font.render('базу данных', True, (100, 255, 100)), (450, 780))
 
@@ -364,8 +364,7 @@ class GameState(AppState):
 
     def process_event(self, event):
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            # self.get_app().set_state(MenuState())
-            self.get_app().set_state(LevelFailed(2))
+            self.get_app().set_state(MenuState())
 
     def loop(self, dt):
         self.doors_opened = 0
@@ -379,7 +378,7 @@ class GameState(AppState):
         main_group.update(pygame.key.get_pressed(), dt)
         main_group.draw(screen)
 
-        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
+        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000  # ТАЙМЕР!!!!!!!!!!!!
         pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
         screen.blit(self._font.render(f'0{str(self._seconds)}:00', True, (112, 102, 50)), (550, 10))
 
@@ -395,9 +394,6 @@ class GameState(AppState):
         else:
             self.blue_gem_amount += 1
 
-    def fail(self):
-        pass
-
 
 class Level1(GameState):
     """Класс первого уровня"""
@@ -406,14 +402,15 @@ class Level1(GameState):
         super().__init__()
         generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
 
+        self._failed = False
+
     def loop(self, dt):
         super(Level1, self).loop(dt)
 
         if self.doors_opened == 2:
             app.set_state(LevelCompleted(self.red_gem_amount, self.blue_gem_amount, self._seconds, 1))
-
-    def fail(self):
-        app.set_state(LevelFailed(1))
+        if self._failed:
+            app.set_state(LevelFailed(1))
 
 
 class Level2(GameState):
@@ -424,13 +421,14 @@ class Level2(GameState):
         generate_level(load_level('data/level2.txt'), load_sprties('data/sprites_level2.txt'))
         self.level = 2
 
+        self._failed = False
+
     def loop(self, dt):
         super(Level2, self).loop(dt)
         if self.doors_opened == 2:
             app.set_state(LevelCompleted(self.red_gem_amount, self.blue_gem_amount, self._seconds, 2))
-
-    def fail(self):
-        app.set_state(LevelFailed(2))
+        if self._failed:
+            app.set_state(LevelFailed(2))
 
 
 class Tile(pygame.sprite.Sprite):
@@ -503,11 +501,11 @@ class Puddle(Object):
 
     def intersection(self, type):
         if self.get_type() == 'green_puddle':
-            app.state.fail()
+            app.state._failed = True
         elif self.get_type() == 'blue_puddle' and type == 'fire':
-            app.state.fail()
+            app.state._failed = True
         elif self.get_type() == 'red_puddle' and type == 'water':
-            app.state.fail()
+            app.state._failed = True
 
 
 class MainSrites(pygame.sprite.Sprite):
