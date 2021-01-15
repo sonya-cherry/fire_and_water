@@ -13,7 +13,7 @@ class App:
     """Основной класс игры, в котором содержится игровой цикл"""
 
     def __init__(self, display_size):
-        self._state = None
+        self.state = None
 
         pygame.init()
         self._screen = pygame.display.set_mode(display_size)
@@ -23,9 +23,9 @@ class App:
         self._clock = pygame.time.Clock()
 
     def set_state(self, state):
-        self._state = state
-        self._state.set_app(self)
-        self._state.setup()
+        self.state = state
+        self.state.set_app(self)
+        self.state.setup()
 
     def get_screen(self):
         return self._screen
@@ -38,12 +38,12 @@ class App:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self._running = False
-                self._state.process_event(event)
+                self.state.process_event(event)
 
             dt = self._clock.tick()
-            self._state.loop(dt)
+            self.state.loop(dt)
             pygame.display.flip()
-        self._state.destroy()
+        self.state.destroy()
 
 
 class AppState:
@@ -107,17 +107,25 @@ class Window(QWidget):
 class MenuState(AppState):
     """Класс главного меню"""
 
-    def __init__(self, background_image, text):
+    def __init__(self):
         super().__init__()
 
         all_sprites.empty()
         main_group.empty()
 
-        self._bg_img = imgs[background_image]
-        self._text = text.split('\n')
+        self._bg_img = imgs['background']
+        self._text = ['Привет!',
+                      'Ты попал в игру "огонь и вода"',
+                      'Правила игры: управлять девочкой можно клавишами A, W, D; ',
+                      'мальчиком можно управлять стрелками.',
+                      'Если смешать огонь и воду или огонь/воду с зелёной жидкостью, ',
+                      'то Вы проиграете.',
+                      'В игре есть 2 уровня, чтбы начать нажмите на одну из кнопок. Удачи!']
+
 
     def setup(self):
         self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
+
 
     def process_event(self, event):  # обрабатываем события
         if event.type == pygame.MOUSEBUTTONDOWN and 440 > event.pos[0] > 240 and 750 > event.pos[1] > 650:
@@ -131,6 +139,7 @@ class MenuState(AppState):
             window.show()
 
             app.exec()
+
 
     def loop(self, dt):  # происходит загрзука, отрисовка всех элементов, находящихся в меню
         screen = self.get_app().get_screen()
@@ -156,19 +165,21 @@ class MenuState(AppState):
         font = pygame.font.Font(None, 25)
         screen.blit(font.render('Посмотреть результаты', True, (100, 255, 100)), (501, 690))
 
+
     def destroy(self):
         pass
 
 
 class LevelCompleted(AppState):
-    """Уровень, отображаемый при удачном завершении игры"""
+    """Состояние, отображаемое при удачном завершении игры"""
 
-    def __init__(self, background_image, red_gem_amount, blue_gem_amount, time, level):
+    def __init__(self, red_gem_amount, blue_gem_amount, time, level):
         super().__init__()
 
         all_sprites.empty()
+        main_group.empty()
 
-        self._bg_img = imgs[background_image]
+        self._bg_img = imgs['background2']
         self._time = time
         self._red_gem_amount = red_gem_amount
         self._blue_gem_amount = blue_gem_amount
@@ -178,14 +189,6 @@ class LevelCompleted(AppState):
 
     def setup(self):
         self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
-
-    def process_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN and 500 > event.pos[0] > 100 and 650 > event.pos[1] > 450:  # 1 уровень
-            self.get_app().set_state(Level1())
-        if event.type == pygame.MOUSEBUTTONDOWN and 1100 > event.pos[0] > 700 and 650 > event.pos[1] > 450:  # 2 уровень
-            self.get_app().set_state(Level2())
-
-    def loop(self, dt):
         screen = self.get_app().get_screen()
         screen.fill((0, 0, 0))
         screen.blit(self._bg_img, (0, 0))
@@ -199,12 +202,94 @@ class LevelCompleted(AppState):
             line_img = font.render(line, True, (255, 255, 255))
             screen.blit(line_img, (0, i * line_img.get_rect().height * 1.1))
 
-        pygame.draw.rect(screen, (123, 104, 238), (100, 450, 400, 200))
-        pygame.draw.rect(screen, (123, 104, 238), (700, 450, 400, 200))
+        gem_coords = [15, 200]
+        for _ in range(3):
+            if self._red_gem_amount > 0:
+                self._red_gem_amount -= 1
+                gem = pygame.image.load('data/red_gem.png')
+                screen.blit(gem, gem_coords)
+            else:
+                gem = pygame.image.load('data/grey_gem.png')
+                screen.blit(gem, gem_coords)
+            gem_coords[0] += 60
+
+        gem_coords = [15, 250]
+        for _ in range(3):
+            if self._blue_gem_amount > 0:
+                self._blue_gem_amount -= 1
+                gem = pygame.image.load('data/blue_gem.png')
+                screen.blit(gem, gem_coords)
+            else:
+                gem = pygame.image.load('data/grey_gem.png')
+                screen.blit(gem, gem_coords)
+            gem_coords[0] += 60
+
+        pygame.draw.rect(screen, (123, 104, 238), (25, 450, 350, 200))
+        pygame.draw.rect(screen, (123, 104, 238), (425, 450, 350, 200))
+        pygame.draw.rect(screen, (123, 104, 238), (825, 450, 350, 200))
 
         font = pygame.font.Font(None, 100)
-        screen.blit(font.render('1 уровень', True, (100, 255, 100)), (130, 500))
-        screen.blit(font.render('2 уровень', True, (100, 255, 100)), (730, 500))
+        screen.blit(font.render('1 уровень', True, (100, 255, 100)), (30, 500))
+        screen.blit(font.render('Меню', True, (100, 255, 100)), (500, 500))
+        screen.blit(font.render('2 уровень', True, (100, 255, 100)), (830, 500))
+
+    def process_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and 375 > event.pos[0] > 25 and 650 > event.pos[1] > 450:  # 1 уровень
+            self.get_app().set_state(Level1())
+        if event.type == pygame.MOUSEBUTTONDOWN and 775 > event.pos[0] > 425 and 650 > event.pos[1] > 450:  # Меню
+            self.get_app().set_state(MenuState())
+        if event.type == pygame.MOUSEBUTTONDOWN and 1175 > event.pos[0] > 825 and 650 > event.pos[1] > 450:  # 2 уровень
+            self.get_app().set_state(Level2())
+
+    def loop(self, dt):
+        pass
+
+
+class LevelFailed(AppState):
+    """Состояние, отображаемое при неудачном завершении игры"""
+
+    def __init__(self, level):
+        super().__init__()
+
+        all_sprites.empty()
+        main_group.empty()
+
+        self._bg_img = imgs['background2']
+        self._level = level
+        self._text = f'К сожалению, вы не прошли уровень {self._level}\nСыграть заново?\n\n\n'.split('\n')
+
+    def setup(self):
+        self._bg_img = pygame.transform.scale(self._bg_img, self.get_app().get_display_size())
+        screen = self.get_app().get_screen()
+        screen.fill((0, 0, 0))
+        screen.blit(self._bg_img, (0, 0))
+        font = pygame.font.Font(None, 70)
+        for i, line in enumerate(self._text):
+            if i > 1:
+                font = pygame.font.Font(None, 70)
+                line_img = font.render(line, True, (255, 255, 255))
+                screen.blit(line_img, (0, i * line_img.get_rect().height * 1.4))
+                continue
+            line_img = font.render(line, True, (255, 255, 255))
+            screen.blit(line_img, (0, i * line_img.get_rect().height * 1.1))
+
+        pygame.draw.rect(screen, (123, 104, 238), (25, 200, 350, 200))
+        pygame.draw.rect(screen, (123, 104, 238), (425, 200, 350, 200))
+        pygame.draw.rect(screen, (123, 104, 238), (825, 200, 350, 200))
+
+        font = pygame.font.Font(None, 100)
+        screen.blit(font.render('1 уровень', True, (100, 255, 100)), (30, 250))
+        screen.blit(font.render('Меню', True, (100, 255, 100)), (500, 250))
+        screen.blit(font.render('2 уровень', True, (100, 255, 100)), (830, 250))
+
+    def process_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN and 375 > event.pos[0] > 25 and 400 > event.pos[1] > 200:  # 1 уровень
+            self.get_app().set_state(Level1())
+        if event.type == pygame.MOUSEBUTTONDOWN and 775 > event.pos[0] > 425 and 400 > event.pos[1] > 200:  # Меню
+            self.get_app().set_state(MenuState())
+        if event.type == pygame.MOUSEBUTTONDOWN and 1175 > event.pos[0] > 825 and 400 > event.pos[1] > 200:  # 2 уровень
+            self.get_app().set_state(Level2())
+
 
 
 class GameState(AppState):
@@ -212,89 +297,87 @@ class GameState(AppState):
     def __init__(self):
         super().__init__()
 
+        self._start_ticks = pygame.time.get_ticks()
+        self._seconds = 0
+        self._font = pygame.font.Font(None, 50)
+
+        self.red_gem_amount = 0
+        self.blue_gem_amount = 0
+
+        self.doors_opened = 0
+
     def setup(self):
         pass
 
     def process_event(self, event):
-        pass
+        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+            # self.get_app().set_state(MenuState())
+            self.get_app().set_state(LevelFailed(2))
 
     def loop(self, dt):
-        self.get_app().get_screen().fill((255, 128, 0))
+        self.doors_opened = 0
+        screen = self.get_app().get_screen()
 
-    def destroy(self):
+        tiles_group.draw(screen)
+
+        all_sprites.update(pygame.key.get_pressed(), dt)
+        all_sprites.draw(screen)
+
+        main_group.update(pygame.key.get_pressed(), dt)
+        main_group.draw(screen)
+
+        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
+        pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
+        screen.blit(self._font.render(f'0{str(self._seconds)}:00', True, (112, 102, 50)), (550, 10))
+
+        for object in all_sprites:
+            if object.get_type() == 'fire_door' and object.door_opened is True:
+                self.doors_opened += 1
+            elif object.get_type() == 'water_door' and object.door_opened is True:
+                self.doors_opened += 1
+
+    def add_gem(self, color):
+        if color == 'red':
+            self.red_gem_amount += 1
+        else:
+            self.blue_gem_amount += 1
+
+    def fail(self):
         pass
 
 
-class Level1(AppState):
+class Level1(GameState):
     """Класс первого уровня"""
 
     def __init__(self):
         super().__init__()
-        self._start_ticks = pygame.time.get_ticks()
-        self._seconds = 0
-        self._font = pygame.font.Font(None, 50)
-        level_x, level_y = generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
+        generate_level(load_level('data/level1.txt'), load_sprties('data/sprites_level1.txt'))
 
     def loop(self, dt):
-        screen = self.get_app().get_screen()
+        super(Level1, self).loop(dt)
 
-        tiles_group.draw(screen)
+        if self.doors_opened == 2:
+            app.set_state(LevelCompleted(self.red_gem_amount, self.blue_gem_amount, self._seconds, 1))
 
-        all_sprites.update(pygame.key.get_pressed(), dt)
-        all_sprites.draw(screen)
-
-        main_group.update(pygame.key.get_pressed(), dt)
-        main_group.draw(screen)
-
-        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
-        pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
-        screen.blit(self._font.render(f'0{str(self._seconds)}:00', True, (112, 102, 50)), (550, 10))
-
-    def setup(self):
-        pass
-
-    def process_event(self, event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.get_app().set_state(MenuState('background', 'Ты вернулся в меню'))
-
-    def destroy(self):
-        pass
+    def fail(self):
+        app.set_state(LevelFailed(1))
 
 
-class Level2(AppState):
+class Level2(GameState):
     """Класс второго уровня"""
 
     def __init__(self):
         super().__init__()
-        self._start_ticks = pygame.time.get_ticks()
-        self._seconds = 0
-        self._font = pygame.font.Font(None, 50)
-        level_x, level_y = generate_level(load_level('data/level2.txt'), load_sprties('data/sprites_level2.txt'))
+        generate_level(load_level('data/level2.txt'), load_sprties('data/sprites_level2.txt'))
+        self.level = 2
 
     def loop(self, dt):
-        screen = self.get_app().get_screen()
+        super(Level2, self).loop(dt)
+        if self.doors_opened == 2:
+            app.set_state(LevelCompleted(self.red_gem_amount, self.blue_gem_amount, self._seconds, 2))
 
-        tiles_group.draw(screen)
-
-        all_sprites.update(pygame.key.get_pressed(), dt)
-        all_sprites.draw(screen)
-
-        main_group.update(pygame.key.get_pressed(), dt)
-        main_group.draw(screen)
-
-        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
-        pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
-        screen.blit(self._font.render(f'0{str(self._seconds)}:00', True, (112, 102, 50)), (550, 10))
-
-    def setup(self):
-        pass
-
-    def process_event(self, event):
-        if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-            self.get_app().set_state(MenuState('background', 'Ты вернулся в меню'))
-
-    def destroy(self):
-        pass
+    def fail(self):
+        app.set_state(LevelFailed(2))
 
 
 class Tile(pygame.sprite.Sprite):
@@ -309,20 +392,69 @@ class Tile(pygame.sprite.Sprite):
 
 
 class Object(pygame.sprite.Sprite):
-    """Класс объектов (луж и дверей)"""
+    """Класс объектов"""
 
     def __init__(self, object_type, pos_x, pos_y):
         super().__init__()
         self._type = object_type
         self.image = object_images[self._type]
         self.rect = self.image.get_rect().move(pos_x, pos_y)
+        self.mask = pygame.mask.from_surface(self.image)
+
+    def intersection(self, type):
+        pass
+
+    def get_type(self):
+        return self._type
 
 
 class Gem(Object):
     """Класс алмазов"""
 
-    def __init__(self, object_type, pos_x, pos_y):
-        super().__init__(object_type, pos_x, pos_y)
+    def __init__(self, gem_type, pos_x, pos_y):
+        super().__init__(gem_type, pos_x, pos_y)
+
+    def intersection(self, type):
+        if self._type == 'red_gem' and type == 'fire':
+            app.state.add_gem('red')
+            self.kill()
+        elif self._type == 'blue_gem' and type == 'water':
+            app.state.add_gem('blue')
+            self.kill()
+
+
+class Door(Object):
+    """Класс дверей"""
+
+    def __init__(self, door_type, pos_x, pos_y):
+        super().__init__(door_type, pos_x, pos_y)
+        self.door_opened = False
+
+    def intersection(self, type):
+        if (type == 'fire' and self._type == 'fire_door') or (type == 'water' and self._type == 'water_door'):
+            self.image = object_images['open_door']
+            self.door_opened = True
+
+    def close(self, type):
+        if type == 'fire' and self._type == 'fire_door':
+            self.image = object_images['fire_door']
+        elif type == 'water' and self._type == 'water_door':
+            self.image = object_images['water_door']
+
+
+class Puddle(Object):
+    """Класс луж"""
+
+    def __init__(self, puddle_type, pos_x, pos_y):
+        super().__init__(puddle_type, pos_x, pos_y)
+
+    def intersection(self, type):
+        if self.get_type() == 'green_puddle':
+            app.state.fail()
+        elif self.get_type() == 'blue_puddle' and type == 'fire':
+            app.state.fail()
+        elif self.get_type() == 'red_puddle' and type == 'water':
+            app.state.fail()
 
 
 class MainSrites(pygame.sprite.Sprite):
@@ -356,6 +488,12 @@ class MainSrites(pygame.sprite.Sprite):
         if not any([i for i in keys]):
             self.image = main_sprites[self._type]
         self.rect.x, self.rect.y = self._position
+
+        for object in all_sprites:
+            if object.get_type() == 'water_door' or object.get_type() == 'fire_door':
+                object.close(self._type)
+            if pygame.sprite.collide_mask(self, object):
+                object.intersection(self._type)
 
 
 def load_image(image_path, colorkey=None):
@@ -401,10 +539,10 @@ def generate_level(level, sprites):
             main_group.add(MainSrites(line[0], int(line[1]), int(line[2])))
         elif line[0] == 'red_gem' or line[0] == 'blue_gem':
             all_sprites.add(Gem(line[0], int(line[1]), int(line[2])))
-        else:
-            all_sprites.add(Object(line[0], int(line[1]), int(line[2])))
-
-    return x, y
+        elif line[0] == 'fire_door' or line[0] == 'water_door':
+            all_sprites.add(Door(line[0], int(line[1]), int(line[2])))
+        elif line[0] == 'red_puddle' or line[0] == 'blue_puddle' or line[0] == 'green_puddle':
+            all_sprites.add(Puddle(line[0], int(line[1]), int(line[2])))
 
 
 if __name__ == '__main__':
@@ -438,12 +576,6 @@ if __name__ == '__main__':
     main_group = pygame.sprite.Group()
     tiles_group = pygame.sprite.Group()
 
-    menu_state = MenuState('background', 'Привет!'
-                                         '\nТы попал в игру "огонь и вода"'
-                                         '\nПравила игры: управлять девочкой можно клавишами A, W, D; '
-                                         'мальчиком можно управлять стрелками. \n'
-                                         'Если смешать огонь и воду или огонь/воду с зелёной жидкостью, '
-                                         'то Вы проиграете.\n'
-                                         'В игре есть 2 уровня, чтбы начать нажмите на одну из кнопок. Удачи!')
+    menu_state = MenuState()
     app.set_state(menu_state)
     app.run()
