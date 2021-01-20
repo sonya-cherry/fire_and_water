@@ -7,6 +7,8 @@ from PyQt5 import uic
 import sqlite3
 
 DISPLAY_SIZE = (1200, 900)  # размеры окна
+JUMP_POWER = 5
+GRAVITY = 0.35
 
 
 class App:
@@ -378,7 +380,7 @@ class GameState(AppState):
         main_group.update(pygame.key.get_pressed(), dt)
         main_group.draw(screen)
 
-        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000  # ТАЙМЕР!!!!!!!!!!!!
+        self._seconds = (pygame.time.get_ticks() - self._start_ticks) // 1000
         pygame.draw.rect(screen, (32, 29, 14), (500, 0, 200, 50))
         screen.blit(self._font.render(f'0{str(self._seconds)}:00', True, (112, 102, 50)), (550, 10))
 
@@ -440,6 +442,8 @@ class Tile(pygame.sprite.Sprite):
         self.image = tile_images[tile_type]
         self.rect = self.image.get_rect().move(60 * pos_x, 30 * pos_y)
         self.mask = pygame.mask.from_surface(self.image)
+
+        self.coords = (pos_x, pos_y)
 
 
 class Object(pygame.sprite.Sprite):
@@ -518,27 +522,61 @@ class MainSrites(pygame.sprite.Sprite):
         self.image = main_sprites[self._type]
         self.rect = self.image.get_rect()
         self.mask = pygame.mask.from_surface(self.image)
+        self.onGround = True
+        self.yvel = 0
 
     def update(self, keys, dt):
+        flag = True
         if keys[pygame.K_UP] and self._type == 'fire':
-            self._position[1] -= 10 * dt / 100
+            if self.onGround:
+                self.yvel = -JUMP_POWER
+            else:
+                self.yvel += GRAVITY
+            self._position[1] -= self.yvel
+        if keys[pygame.K_w] and self._type == 'water':
+            if self.onGround:
+                self.yvel = -JUMP_POWER
+            else:
+                self.yvel += GRAVITY
+            self._position[1] -= self.yvel
+        if any([i for i in keys]) and flag:
+            for i in tiles_group:
+                if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and i.coords[1] < self._position[1]:
+                    self._position[1] += self.yvel
+                    flag = False
         if keys[pygame.K_LEFT] and self._type == 'fire':
             self.image = main_sprites['fire_left']
             self._position[0] -= 10 * dt / 100
-        elif keys[pygame.K_RIGHT] and self._type == 'fire':
-            self.image = main_sprites['fire_right']
-            self._position[0] += 10 * dt / 100
-        if keys[pygame.K_w] and self._type == 'water':
-            self._position[1] -= 10 * dt / 100
         if keys[pygame.K_a] and self._type == 'water':
             self.image = main_sprites['water_left']
             self._position[0] -= 10 * dt / 100
-        elif keys[pygame.K_d] and self._type == 'water':
+        if any([i for i in keys]) and flag:
+            for i in tiles_group:
+                if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and i.coords[0] < self._position[0]:
+                    self._position[0] += 10 * dt / 100
+                    flag = False
+        if keys[pygame.K_RIGHT] and self._type == 'fire':
+            self.image = main_sprites['fire_right']
+            self._position[0] += 10 * dt / 100
+        if keys[pygame.K_d] and self._type == 'water':
             self.image = main_sprites['water_right']
             self._position[0] += 10 * dt / 100
+        if any([i for i in keys]) and flag:
+            for i in tiles_group:
+                if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and i.coords[0] > self._position[0]:
+                    self._position[0] -= 10 * dt / 100
+                    flag = False
+
         if not any([i for i in keys]):
             self.image = main_sprites[self._type]
         self.rect.x, self.rect.y = self._position
+
+        for i in tiles_group:
+            if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and i.coords[1] > self._position[1]:
+                self.onGround = True
+                break
+        else:
+            self.onGround = False
 
         for object in all_sprites:
             if object.get_type() == 'water_door' or object.get_type() == 'fire_door':
