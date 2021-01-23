@@ -8,7 +8,7 @@ import sqlite3
 
 DISPLAY_SIZE = (1200, 900)  # размеры окна
 JUMP_POWER = 5
-GRAVITY = 0.35
+GRAVITY = 0.5
 
 
 class App:

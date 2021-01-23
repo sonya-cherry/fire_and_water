@@ -8,7 +8,7 @@ blue_puddle;700;853;
 blue_puddle;480;312;
 red_puddle;480;860;
 red_puddle;420;140;
-green_puddle;760;645;
+green_puddle;700;645;
 water_door;1020;80;
 fire_door;900;85;
 water;125;680;
