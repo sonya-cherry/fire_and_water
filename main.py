@@ -544,7 +544,7 @@ class MainSrites(pygame.sprite.Sprite):
         if not self.onGround:
             self.yvel += GRAVITY
         self._position[1] += self.yvel
-        if any([i for i in keys]) and flag:
+        if any([i for i in keys]):
             for i in tiles_group:
                 if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and \
                         i.coords[1] * 30 < self._position[1] and \
@@ -559,11 +559,12 @@ class MainSrites(pygame.sprite.Sprite):
             self.image = main_sprites['water_left']
             self.mask = pygame.mask.from_surface(self.image)
             self._position[0] -= 10 * dt / 100
-        if any([i for i in keys]) and flag:
+        if any([i for i in keys]):
             for i in tiles_group:
                 if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and \
-                        i.coords[0] * 30 < self._position[0] and \
-                        ((keys[pygame.K_UP] and self._type == 'fire') or (keys[pygame.K_w] and self._type == 'water')):
+                        i.coords[0] * 30 < self._position[0] and i.coords[1] * 30 < self._position[1] and \
+                        ((keys[pygame.K_LEFT] and self._type == 'fire') or (keys[pygame.K_a] and self._type == 'water')):
+                    print(i.coords[0] * 30, self._position[0])
                     self._position[0] += 10 * dt / 100
                     flag = False
         if keys[pygame.K_RIGHT] and self._type == 'fire':
@@ -574,11 +575,11 @@ class MainSrites(pygame.sprite.Sprite):
             self.image = main_sprites['water_right']
             self.mask = pygame.mask.from_surface(self.image)
             self._position[0] += 10 * dt / 100
-        if any([i for i in keys]) and flag:
+        if any([i for i in keys]):
             for i in tiles_group:
                 if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and \
                         i.coords[0] * 30 > self._position[0] and \
-                        ((keys[pygame.K_UP] and self._type == 'fire') or (keys[pygame.K_w] and self._type == 'water')):
+                        ((keys[pygame.K_RIGHT] and self._type == 'fire') or (keys[pygame.K_d] and self._type == 'water')):
                     self._position[0] -= 10 * dt / 100
                     flag = False
 
