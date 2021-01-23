@@ -550,7 +550,7 @@ class MainSrites(pygame.sprite.Sprite):
                         i.coords[1] * 30 < self._position[1] and \
                         ((keys[pygame.K_UP] and self._type == 'fire') or (keys[pygame.K_w] and self._type == 'water')):
                     self._position[1] += self.yvel
-                    flag = False
+
         if keys[pygame.K_LEFT] and self._type == 'fire':
             self.image = main_sprites['fire_left']
             self.mask = pygame.mask.from_surface(self.image)
@@ -564,9 +564,8 @@ class MainSrites(pygame.sprite.Sprite):
                 if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and \
                         i.coords[0] * 30 < self._position[0] and i.coords[1] * 30 < self._position[1] and \
                         ((keys[pygame.K_LEFT] and self._type == 'fire') or (keys[pygame.K_a] and self._type == 'water')):
-                    print(i.coords[0] * 30, self._position[0])
                     self._position[0] += 10 * dt / 100
-                    flag = False
+
         if keys[pygame.K_RIGHT] and self._type == 'fire':
             self.image = main_sprites['fire_right']
             self.mask = pygame.mask.from_surface(self.image)
@@ -578,10 +577,9 @@ class MainSrites(pygame.sprite.Sprite):
         if any([i for i in keys]):
             for i in tiles_group:
                 if pygame.sprite.collide_mask(i, self) and i.tile_type == 'wall' and \
-                        i.coords[0] * 30 > self._position[0] and \
+                        i.coords[0] * 60 > self._position[0] and i.coords[1] * 30 < self._position[1] and \
                         ((keys[pygame.K_RIGHT] and self._type == 'fire') or (keys[pygame.K_d] and self._type == 'water')):
                     self._position[0] -= 10 * dt / 100
-                    flag = False
 
         if not any([i for i in keys]):
             self.image = main_sprites[self._type]
